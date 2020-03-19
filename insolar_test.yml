@@ -1,0 +1,319 @@
+openapi: "3.0.0"
+info:
+  title: Simple API overview
+  version: 1.0.0
+tags: 
+  - name: User
+
+paths:
+  /api/v1/user:
+    post:
+      operationId: createNewUser
+      summary: Unauthorized guest can register himself as new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+            example:
+              fio: Ю Ли
+              role: unprivilegeduser
+              phone: "+79161214670"
+              userlogin: yulee
+              password: Passw0rd
+              social: []
+      responses:
+        '201':
+          description: |-
+            201 response
+          content:
+            application/json:
+              examples: 
+                createdUser:
+                  value: {
+                    "userid": 12345678,
+                    "status": "active",
+                    "fio": "Ю Ли",
+                    "role": "unprivilegeduser",
+                    "phone": "+79161214670",
+                    "userlogin": "yulee",
+                    "email": null,
+                    "social": []
+                  }
+        '400':
+          description: |-
+            400 response
+          content:
+            application/json: 
+              examples: 
+                missingSchema:
+                  value: {
+                    "code": 40001,
+                    "message": "Missing json schema"
+                   }
+                missingReqParam:
+                  value: {
+                    "code": 40002,
+                    "message": "Missing required field fio"
+                   }
+                invalidData:
+                  value: {
+                    "code": 40003,
+                    "message": "Parameter fio is more than 256 symbols"
+                   }
+        '409':
+          description: |-
+            409 response
+          content:
+            application/json: 
+              examples: 
+                userExistsConflict:
+                  value: {
+                    "code": 40901,
+                    "message": "User already exists"
+                   }
+    get:
+      operationId: getUsersList
+      summary: Authorized user can get info about users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          required: false
+          description: The number of items to skip before starting to collect the result set.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 20
+          required: false
+          description: The number of items to return.
+      responses:
+        '200':
+          description: |-
+            200 response
+          content:
+            application/json:
+              examples:
+                userListLimit2:
+                  value: [
+                    {
+                      "userid": 12345678,
+                      "status": "active",
+                      "fio": "Ю Ли",
+                      "role": "unprivilegeduser",
+                      "phone": "+79161214670",
+                      "userlogin": "yulee",
+                      "email": null,
+                      "social": []
+                    },
+                    {
+                      "userid": 92345678,
+                      "status": "active",
+                      "fio": "Ли Куан Ю",
+                      "role": "unprivilegeduser",
+                      "phone": "+79161214677",
+                      "userlogin": "leequanyu",
+                      "email": null,
+                      "social": []
+                    
+                    }
+                  ]
+        '401':
+          description: |-
+            401 response
+          content:
+            application/json:
+              examples:
+                unauthorised:
+                  value: {
+                    "code": 40101,
+                    "message": "Unauthorized user can not find info about registered users"
+                  }
+     
+  /api/v1/user/{userId}:
+    get:
+      operationId: getUserById
+      summary: Authorized user can get info about certain user by userId
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+            minimum: 8
+            maximum: 8
+            default: 8
+          required: true
+      responses:
+        '200':
+          description: |-
+            200 response
+          content:
+            application/json:
+              examples:
+                userById:
+                  value: {
+                      "userid": 92345678,
+                      "status": "active",
+                      "fio": "Ли Куан Ю",
+                      "role": "unprivilegeduser",
+                      "phone": "+79161214677",
+                      "userlogin": "leequanyu",
+                      "email": null,
+                      "social": []
+                    }
+
+        '403':
+          description: |-
+            403 response
+          content:
+            application/json:
+              examples:
+                authorisedCantSeeAdmins:
+                  value: {
+                    "code": 40301,
+                    "message": "Authorized user can not find info about admins"
+                  }
+    delete:
+      operationId: delUser
+      summary: Authorized user can del himself, admin can del any user
+      security:
+        - bearerAuth: []
+      
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+            minimum: 8
+            maximum: 8
+            default: 8
+          required: true
+      responses:
+        '204':
+          description: |-
+            204 response
+          content:
+            application/json:
+              examples:
+                delUserById:
+                  value: {
+                      "userid": 92345678,
+                      "message": "User has been sucsessfully deleted"
+                    }
+        '403':
+          description: |-
+            403 responses
+          content:
+            application/json:
+              examples:
+                delUserByNotAdmin:
+                  value: {
+                      "code": 40301,
+                      "message": "Regular user can not del another user, only himself"
+                    }
+
+  /api/v1/user/{userLogin}:
+    get:
+      operationId: getUserByLogin
+      summary: Authorized user can get info about certain user by userLogin
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userLogin
+          schema:
+            type: string
+            minimum: 4
+            maximum: 256
+          required: true
+      responses:
+        '200':
+          description: |-
+            200 response
+          content:
+            application/json:
+              examples:
+                userByLogin:
+                  value: {
+                      "userid": 92345678,
+                      "status": "active",
+                      "fio": "Ли Куан Ю",
+                      "role": "unprivilegeduser",
+                      "phone": "+79161214677",
+                      "userlogin": "leequanyu",
+                      "email": null,
+                      "social": []
+                    }
+
+        '403':
+          description: |-
+            403 response
+          content:
+            application/json:
+              examples:
+                authorisedCantSeeAdmins:
+                  value: {
+                    "code": 40301,
+                    "message": "Authorized user can not find info about admins"
+                  }
+        '404':
+          description: |-
+            404 response
+          content:
+            application/json:
+              examples:
+                unknownUser:
+                  value: {
+                    "code": 40304,
+                    "message": "User not found"
+                  }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Social:
+      type: object
+      properties:
+        snetwork:
+          type: string
+        profile:
+          type: string
+      required:
+        [snetwork, profile]
+    NewUser:
+      type: object
+      properties:
+        fio:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+        userlogin:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        gender:
+          type: string
+        social:
+          type: array
+          items:
+            $ref: '#/components/schemas/Social'
+      required:
+        [fio, role, userlogin, password, social]
