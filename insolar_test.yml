@@ -296,7 +296,7 @@ paths:
               examples:
                 unknownUser:
                   value: {
-                    "code": 40304,
+                    "code": 40404,
                     "message": "User not found"
                   }
 
