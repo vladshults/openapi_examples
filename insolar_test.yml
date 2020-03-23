@@ -10,6 +10,8 @@ paths:
     post:
       operationId: createNewUser
       summary: Unauthorized guest can register himself as new user
+      tags: 
+        - User
       requestBody:
         content:
           application/json:
@@ -45,6 +47,8 @@ paths:
             400 response
           content:
             application/json: 
+              schema:
+                $ref: '#/components/schemas/Error'
               examples: 
                 missingSchema:
                   value: {
@@ -66,6 +70,8 @@ paths:
             409 response
           content:
             application/json: 
+              schema:
+                $ref: '#/components/schemas/Error'
               examples: 
                 userExistsConflict:
                   value: {
@@ -75,6 +81,8 @@ paths:
     get:
       operationId: getUsersList
       summary: Authorized user can get info about users
+      tags: 
+        - User
       security:
         - bearerAuth: []
       parameters:
@@ -131,6 +139,8 @@ paths:
             401 response
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
               examples:
                 unauthorised:
                   value: {
@@ -142,6 +152,8 @@ paths:
     get:
       operationId: getUserById
       summary: Authorized user can get info about certain user by userId
+      tags: 
+        - User
       security:
         - bearerAuth: []
       parameters:
@@ -149,9 +161,8 @@ paths:
           name: userId
           schema:
             type: integer
-            minimum: 8
-            maximum: 8
-            default: 8
+            minimum: 10000000
+            maximum: 99999999
           required: true
       responses:
         '200':
@@ -177,6 +188,8 @@ paths:
             403 response
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
               examples:
                 authorisedCantSeeAdmins:
                   value: {
@@ -186,6 +199,8 @@ paths:
     delete:
       operationId: delUser
       summary: Authorized user can del himself, admin can del any user
+      tags: 
+        - User
       security:
         - bearerAuth: []
       
@@ -194,9 +209,8 @@ paths:
           name: userId
           schema:
             type: integer
-            minimum: 8
-            maximum: 8
-            default: 8
+            minimum: 10000000
+            maximum: 99999999
           required: true
       responses:
         '204':
@@ -215,6 +229,8 @@ paths:
             403 responses
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
               examples:
                 delUserByNotAdmin:
                   value: {
@@ -226,6 +242,8 @@ paths:
     get:
       operationId: getUserByLogin
       summary: Authorized user can get info about certain user by userLogin
+      tags: 
+        - User
       security:
         - bearerAuth: []
       parameters:
@@ -233,8 +251,8 @@ paths:
           name: userLogin
           schema:
             type: string
-            minimum: 4
-            maximum: 256
+            minLength: 4
+            maxLength: 256
           required: true
       responses:
         '200':
@@ -260,6 +278,8 @@ paths:
             403 response
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
               examples:
                 authorisedCantSeeAdmins:
                   value: {
@@ -271,6 +291,8 @@ paths:
             404 response
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
               examples:
                 unknownUser:
                   value: {
@@ -285,13 +307,28 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          minimum: 10000
+          maximum: 99999
+        message:
+          type: string
+          minLength: 2
+          maxLength: 256
     Social:
       type: object
       properties:
         snetwork:
           type: string
+          minLength: 2
+          maxLength: 256
         profile:
           type: string
+          minLength: 4
+          maxLength: 256
       required:
         [snetwork, profile]
     NewUser:
@@ -299,18 +336,30 @@ components:
       properties:
         fio:
           type: string
+          minLength: 4
+          maxLength: 256
         phone:
           type: string
+          minLength: 10 # like 9685654357
+          maxLength: 18 # like +7 (968) 565-43-57
         role:
           type: string
+          enum: [guest, unprivilegeduser, admin]
         userlogin:
           type: string
+          minLength: 4
+          maxLength: 128
         email:
           type: string
+          minLength: 7
+          maxLength: 128
         password:
           type: string
+          minLength: 4
+          maxLength: 128
         gender:
           type: string
+          enum: [male, female, other]
         social:
           type: array
           items:
